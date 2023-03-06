@@ -1,0 +1,36 @@
+#!/usr/bin/python3
+users = ["admin","zahra"]
+roles = {
+		"admin": ["index","api","apiv1"],
+		 "zahra": ["index"]
+	  }
+
+user="admin1"
+
+def authen_user(f):
+	def wrapper(*args, ** kwargs):
+		if user in users:
+			if f.__name__ in roles[user]:
+				f(*args, ** kwargs)		
+			else:
+				print ("ACCESS DENIED")
+		else: 
+			print ("User Not Defined..")		
+	return wrapper
+	  
+	
+@authen_user
+def index():
+  print ("welcome to index page!!!")
+
+@authen_user
+def api():
+  print ("welcome to api page!!!")
+
+@authen_user
+def apiv1():
+  print ("welcome to apiv1 page!!!")
+  
+index()
+api()
+apiv1()
