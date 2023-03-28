@@ -5,7 +5,7 @@ roles = {
 		 "zahra": ["index"]
 	  }
 
-user="admin1"
+user="admin"
 
 def authen_user(f):
 	def wrapper(*args, ** kwargs):
