@@ -1,0 +1,10 @@
+temperatures
+5
+7
+12
+10
+asdasd
+33
+sadas
+asdasd
+55
