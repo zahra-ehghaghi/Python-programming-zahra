@@ -1,6 +1,8 @@
 from modules import functions
-
+import time
 while True:
+    now = time.strftime("%b %m %Y %H:%M:%S")
+    print("Time is: ",now)
     user_prompt = "Type add, show, edit, complete, exit:"
     user_action = input(user_prompt).strip()
     if user_action.startswith("add"):
