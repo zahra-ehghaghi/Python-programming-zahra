@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 
 files/test.py
+web-app1/.idea/
