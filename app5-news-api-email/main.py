@@ -7,6 +7,7 @@ url=f"https://newsapi.org/v2/everything?q={keysearch}&from=2023-04-22&sortBy=pub
 request = requests.get(url)
 content = request.json()
 
+
 body="Subject:New NewsLetter Email \n"
 for item in content["articles"][:20]:
     if item['title'] is not None:
