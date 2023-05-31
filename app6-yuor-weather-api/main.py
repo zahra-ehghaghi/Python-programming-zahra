@@ -5,7 +5,10 @@ app = Flask("Webpage")
 
 @app.route("/")
 def home():
-    return  render_template("home.html")
+    df = pd.read_csv("data-small/stations.txt",skiprows=17)
+    stations = df[["STAID","STANAME                                 "]]
+
+    return  render_template("home.html",data=stations.to_html())
 
 
 @app.route("/api/v1/<station>/<date>")
