@@ -2,10 +2,11 @@ import requests
 import selectorlib
 import  ssl
 import  smtplib
+import sqlite3
 from datetime import  datetime
 
 URL="http://programmer100.pythonanywhere.com/"
-
+connection = sqlite3.connect("temperature.db")
 def scraping(url):
     response = requests.get(url)
     return  response.text
@@ -28,17 +29,17 @@ def send_email(message):
         server.sendmail(username, reciever, message)
 
 
-def write(contect):
+def write(extracted):
     now = datetime.now().strftime("%y-%m-%d-%H-%M-%S")
-    with open("data.txt","a") as file:
-        file.write(f"{now},{contect}\n")
-def read():
-    with open("data.txt","r") as file:
-        file.read()
+    sql = "insert into Temperatures values(?,?)"
+    cursor = connection.cursor()
+    cursor.execute(sql,(extracted,now))
+    connection.commit()
+
 
 if __name__ == "__main__":
     scrapped = scraping(URL)
     extracted = extracting(scrapped)
     write(extracted)
     print(extracted)
-
+    print(read())
