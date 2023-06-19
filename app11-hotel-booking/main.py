@@ -25,6 +25,10 @@ class Hotel:
     else:
       return False
 
+
+class SpaHotel(Hotel):
+    def book_spa_package(self):
+        pass
 class ReservationTicket:
 
   def __init__(self,customer_name,hotel_object):
@@ -40,6 +44,18 @@ class ReservationTicket:
     Hotel Name  {self.hotel_object.name}
 """
     return content
+
+
+class Spa_Ticket(ReservationTicket):
+    def generate(self):
+        content = f"""
+      Thanks you for your SPA reservation!
+      Here are you  booking  data:
+      Name: {self.customer_name}
+      Hotel Name  {self.hotel_object.name}
+"""
+        return content
+
 class CreditCard():
     def __init__(self,card_number):
         self.card_number = card_number
@@ -63,7 +79,7 @@ class SecureCreditCard(CreditCard):
 print(df)
 hotel_ID = input("Enter the id of the hotel:")
 print(hotel_ID)
-hotel = Hotel(hotel_ID)
+hotel = SpaHotel(hotel_ID)
 if  hotel.available():
     creditcard  = SecureCreditCard("1234567890123456")
     if creditcard.validate(expiration="12/26", holder="JOHN SMITH", csv="123"):
@@ -72,6 +88,11 @@ if  hotel.available():
             name = input("Enter your name:")
             reservation_ticket = ReservationTicket(name,hotel)
             print(reservation_ticket.generate())
+            spa_hotel= input("Do you want to book a spa package: ")
+            if spa_hotel == "yes":
+                hotel.book_spa_package()
+                spa_ticket = Spa_Ticket(name, hotel)
+                print(spa_ticket.generate())
         else:
             print("CreditCard authentication failed")
     else:
