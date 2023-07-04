@@ -1,6 +1,5 @@
 import sys
-import sqlite3
-
+import mysql.connector
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QIcon, QTextFormat
 from PyQt6.QtWidgets import (
@@ -22,11 +21,15 @@ from PyQt6.QtWidgets import (
     QMessageBox,
 )
 
-class DataBaseConnection():
-    def __init__(self,datbase_file="database.db"):
-        self.datbase_file = datbase_file
+class DataBaseConnection:
+    def __init__(self,host="localhost", user="root",password="123456",database="school"):
+        self.host = host
+        self.user = user
+        self. password = password
+        self.databse = database
     def connect(self):
-        connection = sqlite3.connect(self.datbase_file)
+        connection = mysql.connector.connect(host=self.host, user = self.user,
+                                             password = self.password, database = self.databse)
         return  connection
 
 class MainWindow(QMainWindow):
@@ -82,19 +85,38 @@ class MainWindow(QMainWindow):
         delete_button.clicked.connect(self.delete)
         self.statusbar.addWidget(delete_button)
 
+    # def load_data(self):
+    #     connection = DataBaseConnection().connect()
+    #     cursor = connection.cursor()
+    #     result = cursor.execute("SELECT * FROM students")
+    #     select_rows = result
+    #     self.table.setRowCount(0)
+    #     for row_index, row_item in enumerate(select_rows):
+    #         self.table.insertRow(row_index)
+    #         for column_index, column_item in enumerate(row_item):
+    #             self.table.setItem(
+    #                 row_index, column_index, QTableWidgetItem(str(column_item))
+    #             )
+    #     cursor.close()
+    #     connection.close()
+
     def load_data(self):
         connection = DataBaseConnection().connect()
         cursor = connection.cursor()
-        select_rows = cursor.execute("select * from students").fetchall()
-        self.table.setRowCount(0)
-        for row_index, row_item in enumerate(select_rows):
-            self.table.insertRow(row_index)
-            for column_index, column_item in enumerate(row_item):
-                self.table.setItem(
-                    row_index, column_index, QTableWidgetItem(str(column_item))
-                )
-        cursor.close()
-        connection.close()
+        operation= "SELECT * FROM students"
+
+        for result in cursor.execute(operation,multi=True):
+            if result.with_rows:
+                select_rows = result.fetchall()
+                self.table.setRowCount(0)
+                for row_index, row_item in enumerate(select_rows):
+                    print(row_item)
+                    self.table.insertRow(row_index)
+                    for column_index, column_item in enumerate(row_item):
+                       self.table.setItem(row_index, column_index, QTableWidgetItem(str(column_item)))
+            else:
+                print("Number of rows affected by statement '{}': {}".format(
+                    result.statement, result.rowcount))
 
     def insert(self):
         insertdialog = InsertDialog()
@@ -140,7 +162,7 @@ class DeleteDialog(QMessageBox):
         if button == QMessageBox.StandardButton.Yes:
             connection = DataBaseConnection().connect()
             cursor = connection.cursor()
-            sql = "delete from students  where id = ?"
+            sql = "delete from students  where id = %s"
             cursor.execute(sql, (self.id,))
             connection.commit()
             cursor.close()
@@ -187,7 +209,7 @@ class EditDialog(QDialog):
     def update_student(self):
         connection = DataBaseConnection().connect()
         cursor = connection.cursor()
-        sql = "update students set name=? , course = ? , mobile=? where id = ?"
+        sql = "update students set name=%s , course = %s , mobile=%s where id = %s"
         cursor.execute(
             sql,
             (self.name.text(), self.courses.currentText(), self.mobile.text(), self.id),
@@ -232,7 +254,7 @@ class InsertDialog(QDialog):
         mobile = self.mobile.text()
         connection = DataBaseConnection().connect()
         cursor = connection.cursor()
-        insert_statement = "insert into students (name,course,mobile) values(?,?,?)"
+        insert_statement = "insert into students (name,course,mobile) values(%s,%s,%s)"
         cursor.execute(insert_statement, (name, course, mobile))
         connection.commit()
         cursor.close()
@@ -264,9 +286,7 @@ class SearchDialog(QDialog):
         name = self.search_text.text()
         connection = DataBaseConnection().connect()
         cursor = connection.cursor()
-        results = cursor.execute(
-            "select * from students where name = ?", (name,)
-        ).fetchall()
+
 
         items = mainwindow.table.findItems(name, Qt.MatchFlag.MatchFixedString)
         for item in items:
