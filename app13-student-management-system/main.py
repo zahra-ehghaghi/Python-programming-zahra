@@ -22,6 +22,12 @@ from PyQt6.QtWidgets import (
     QMessageBox,
 )
 
+class DataBaseConnection():
+    def __init__(self,datbase_file="database.db"):
+        self.datbase_file = datbase_file
+    def connect(self):
+        connection = sqlite3.connect(self.datbase_file)
+        return  connection
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -77,8 +83,9 @@ class MainWindow(QMainWindow):
         self.statusbar.addWidget(delete_button)
 
     def load_data(self):
-        connection = sqlite3.connect("database.db")
-        select_rows = connection.execute("select * from students").fetchall()
+        connection = DataBaseConnection().connect()
+        cursor = connection.cursor()
+        select_rows = cursor.execute("select * from students").fetchall()
         self.table.setRowCount(0)
         for row_index, row_item in enumerate(select_rows):
             self.table.insertRow(row_index)
@@ -86,7 +93,7 @@ class MainWindow(QMainWindow):
                 self.table.setItem(
                     row_index, column_index, QTableWidgetItem(str(column_item))
                 )
-
+        cursor.close()
         connection.close()
 
     def insert(self):
@@ -131,10 +138,12 @@ class DeleteDialog(QMessageBox):
         )
 
         if button == QMessageBox.StandardButton.Yes:
-            connection = sqlite3.connect("database.db")
+            connection = DataBaseConnection().connect()
+            cursor = connection.cursor()
             sql = "delete from students  where id = ?"
-            connection.execute(sql, (self.id,))
+            cursor.execute(sql, (self.id,))
             connection.commit()
+            cursor.close()
             connection.close()
             mainwindow.load_data()
             self.close()
@@ -176,13 +185,15 @@ class EditDialog(QDialog):
         self.setLayout(layout)
 
     def update_student(self):
-        connection = sqlite3.connect("database.db")
+        connection = DataBaseConnection().connect()
+        cursor = connection.cursor()
         sql = "update students set name=? , course = ? , mobile=? where id = ?"
-        connection.execute(
+        cursor.execute(
             sql,
             (self.name.text(), self.courses.currentText(), self.mobile.text(), self.id),
         )
         connection.commit()
+        cursor.close()
         connection.close()
         mainwindow.load_data()
         self.close()
@@ -219,10 +230,12 @@ class InsertDialog(QDialog):
         name = self.name.text()
         course = self.courses.currentText()
         mobile = self.mobile.text()
+        connection = DataBaseConnection().connect()
+        cursor = connection.cursor()
         insert_statement = "insert into students (name,course,mobile) values(?,?,?)"
-        connection = sqlite3.connect("database.db")
-        connection.execute(insert_statement, (name, course, mobile))
+        cursor.execute(insert_statement, (name, course, mobile))
         connection.commit()
+        cursor.close()
         connection.close()
         mainwindow.load_data()
         self.close()
@@ -249,14 +262,16 @@ class SearchDialog(QDialog):
     def search_std(self):
         mainwindow.table.clearSelection()
         name = self.search_text.text()
-        connection = sqlite3.connect("database.db")
-        results = connection.execute(
+        connection = DataBaseConnection().connect()
+        cursor = connection.cursor()
+        results = cursor.execute(
             "select * from students where name = ?", (name,)
         ).fetchall()
 
         items = mainwindow.table.findItems(name, Qt.MatchFlag.MatchFixedString)
         for item in items:
             mainwindow.table.item(item.row(), 1).setSelected(True)
+        cursor.close()
         connection.close()
 
 
